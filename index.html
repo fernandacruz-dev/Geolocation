@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <title>Geolocalização</title>
+    
+    <style>
+        #map { 
+            height: 180px; 
+            width: 50%; }
+    </style>
+    
+    <script>   
+
+        onload = () => {
+            let geo = navigator.geolocation;
+            var map;
+            
+            const geoCoords = function (posicao) {
+                let lat = posicao.coords.latitude;
+                let lng = posicao.coords.longitude;
+                output.innerHTML = `Coordenadas: (${lat}; ${lng})`;
+
+                if(map == undefined) {
+                    //MAP é a variavel do nosso mapa; L.map chama o nosso ID; setView pega as coordenadas; 13 é o valor do zoom do mapa;
+                    map = L.map('map').setView([posicao.coords.latitude, posicao.coords.longitude], 13);
+                }else {
+                    map.remove();//remove o mapa atual e recarrega com as novas informações abaixo
+                    map = L.map('map').setView([posicao.coords.latitude, posicao.coords.longitude], 13);
+                }
+
+                //renderiza e cria a parte visivel do mapa
+                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+
+                //adiciona o marcador no mapa
+                L.marker([posicao.coords.latitude, posicao.coords.longitude]).addTo(map)
+                    .bindPopup('Eu estou aqui')
+                    .openPopup();
+            };
+
+            //recarrega as informações da minha nova localização
+            let watchID = geo.watchPosition(geoCoords);
+            console.log(watchID);
+            
+            //para coordenadas da minha localização
+            stopWatch.onclick = () => {
+                console.log(watchID)
+                geo.clearWatch(watchID);
+            }
+
+        }; 
+
+        
+        // FUNCAO PARA PREVINIR ERROR:
+        function geoError(error){
+            switch(error.code){
+                case error.TIMEOUT:
+                    console.logo('Limite de tempo para localização');
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    console.log('Localização não disponível');
+                    break;
+                case error.PERMISSION_DENIED:
+                    console.log('Localização não permitida');
+                    break;
+                default:
+                    alert('Erro na geolocalização. Código: '+error.code);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Geolocalizacao</h1>
+    
+    <p id="output"></p>
+    
+    <p><button id="stopWatch">Parar Georeferenciamento</button></p>
+
+    <div id="map"></div>
+</body>
+</html>
